@@ -1,0 +1,37 @@
+name: Extract QarzManager Project
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Android project
+        run: |
+          mkdir -p /tmp/qarz
+          unzip -o QarzManager_Full_v2.zip -d /tmp/qarz
+
+          ROOT=$(find /tmp/qarz -name settings.gradle -type f | head -1 | xargs dirname)
+
+          echo "Project root: $ROOT"
+
+          cp -r "$ROOT"/. ./
+
+          rm -f QarzManager_Full_v2.zip
+
+      - name: Commit extracted project
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add -A
+          git commit -m "Extract Android project" || echo "Nothing to commit"
+          git push
